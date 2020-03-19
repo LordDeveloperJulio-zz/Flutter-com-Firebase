@@ -10,6 +10,8 @@ class Inicio extends StatefulWidget {
 
 class _InicioState extends State<Inicio> {
   File _imagem;
+  String _statusUpload = "Upload não iniciado";
+  String _urlRecuperada = null;
 
   Future _recuperarImagem(bool daCamera) async {
     File _imagemSelecionada;
@@ -25,13 +27,37 @@ class _InicioState extends State<Inicio> {
     });
   }
 
-  Future _uploadImagem() async{
+  Future _uploadImagem() async {
     //Referenciando arquivo
     FirebaseStorage storage = FirebaseStorage.instance;
     StorageReference pastaRaiz = storage.ref();
     StorageReference arquivo = pastaRaiz.child("fotos").child("foto1.jpg");
     //Fazendo upload
-    arquivo.putFile(_imagem);
+    StorageUploadTask task = arquivo.putFile(_imagem);
+    //Controlando progresso do upload
+    task.events.listen((storageEvent) {
+      if (storageEvent.type == StorageTaskEventType.progress) {
+        setState(() {
+          _statusUpload = "Em progresso";
+        });
+      } else if (storageEvent.type == StorageTaskEventType.success) {
+        setState(() {
+          _statusUpload = "Enviado com sucesso";
+        });
+      }
+    });
+    //Recuperando a URL da imagem
+    task.onComplete.then((StorageTaskSnapshot snapshot) {
+      _recuperarURLImagem(snapshot);
+    });
+  }
+
+  Future _recuperarURLImagem(StorageTaskSnapshot snapshot) async {
+    String url = await snapshot.ref.getDownloadURL();
+    print("URL da imagem" + url);
+    setState(() {
+      _urlRecuperada = url;
+    });
   }
 
   @override
@@ -42,6 +68,7 @@ class _InicioState extends State<Inicio> {
       ),
       body: Column(
         children: <Widget>[
+          Text(_statusUpload),
           RaisedButton(
             child: Text("Câmera"),
             onPressed: () {
@@ -55,12 +82,15 @@ class _InicioState extends State<Inicio> {
             },
           ),
           _imagem == null ? Container() : Image.file(_imagem),
-          RaisedButton(
-            child: Text("Upload Storage"),
-            onPressed: () {
-              _uploadImagem();
-            },
-          ),
+          _imagem == null
+              ? Container()
+              : RaisedButton(
+                  child: Text("Upload Storage"),
+                  onPressed: () {
+                    _uploadImagem();
+                  },
+                ),
+          _urlRecuperada == null ? Container() : Image.network(_urlRecuperada)
         ],
       ),
     );
