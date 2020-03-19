@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 
+import 'GaleriaStorage.dart';
+
 class Inicio extends StatefulWidget {
   @override
   _InicioState createState() => _InicioState();
@@ -31,7 +33,7 @@ class _InicioState extends State<Inicio> {
     //Referenciando arquivo
     FirebaseStorage storage = FirebaseStorage.instance;
     StorageReference pastaRaiz = storage.ref();
-    StorageReference arquivo = pastaRaiz.child("fotos").child("foto1.jpg");
+    StorageReference arquivo = pastaRaiz.child("fotos").child("");
     //Fazendo upload
     StorageUploadTask task = arquivo.putFile(_imagem);
     //Controlando progresso do upload
@@ -57,6 +59,8 @@ class _InicioState extends State<Inicio> {
     print("URL da imagem" + url);
     setState(() {
       _urlRecuperada = url;
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => GaleriaStorage(url: url)));
     });
   }
 
@@ -90,7 +94,7 @@ class _InicioState extends State<Inicio> {
                     _uploadImagem();
                   },
                 ),
-          _urlRecuperada == null ? Container() : Image.network(_urlRecuperada)
+          //_urlRecuperada == null ? Container() : Image.network(_urlRecuperada)
         ],
       ),
     );
