@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-void main(){
-  runApp(App());
-}
+import 'package:fluttercomfirebase/telas/Inicio.dart';
 
-class App extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
+
+void main() {
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: Inicio(),
+  ));
 }
